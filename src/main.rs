@@ -1,10 +1,65 @@
-use rppal::i2c::I2c;
-//use async_std::task::sleep;
-use std::{time::Duration, thread};
-//use futures::executor::block_on;
-//use pcalib_test::PCA9685;
+use rppal::i2c::{I2c};
+use pcalib_test::PCA9685;
+use tokio::time::delay_for;
+use std::time::Duration;
 
-fn main() {
+#[tokio::main]
+async fn main() {
+
+    let mut device = PCA9685::new(0x40, I2c::new().unwrap()).unwrap();
+    if let Err(_e) = device.set_prescale_fr(50).await {
+        panic!();
+    }
+
+    if let Err(_e) = device.start().await {
+        panic!();
+    }
+
+    loop {
+        //Set Max
+        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x97)) {
+            panic!();
+        }
+        delay_for(Duration::from_secs(2)).await;
+        //Set Mid
+        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x33)) {
+            panic!();
+        }
+        delay_for(Duration::from_secs(2)).await;
+        //Set Min
+        if let Err(_e) = device.set_channel(9, (0, 0), (0x00, 0xCD)) {
+            panic!();
+        }
+        delay_for(Duration::from_secs(2)).await;
+        //Set Mid
+        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x33)) {
+            panic!();
+        }
+        delay_for(Duration::from_secs(2)).await;
+    }
+
+}
+/*
+fn restart(bus: &mut I2c) { 
+    //Read Mode 1
+    let mut buf = vec![0];
+    bus.write_read(&vec![0x00], &mut buf).expect("Failed to read bytes");
+    let mode = buf.get(0).unwrap();
+    println!("Mode 1 Register (Sleeping): {:#b}", mode);
+    //If bit 7 is on
+    if buf.get(0).unwrap() & 0x40 == 0x40 {
+        //Clear Bit 4 (Turn On)
+        bus.write(&vec![0x00, mode - 0x10]).expect("Failed to read bytes");
+        //Wait fo rat least 500us, stabilize oscillator
+        thread::sleep(Duration::from_micros(750));
+        //Write a logic 1 to bit 7
+        bus.write(&vec![0x00, 0x41]);
+    }
+    bus.write_read(&vec![0x00], &mut buf);
+    println!("Mode 1 Register (Restarted): {:#b}", buf.get(0).unwrap());
+}
+
+fn backup() {
     thread::sleep(Duration::from_secs(2));
 
     let osc = 25 * (10^6);
@@ -16,7 +71,6 @@ fn main() {
     let mut buf = vec![0];
     bus.write_read(&vec![0x00, 0b00010001], &mut buf).expect("Failed to read bytes");
     println!("Mode 1, (Go to sleep) {:#b}", buf.get(0).unwrap());
-
 
     let mut prescale_buf = vec![0];
     bus.write_read(&vec![0xfe], &mut prescale_buf);
@@ -87,23 +141,4 @@ fn main() {
     bus.write(&vec![0x9, max.0]);
 
     thread::sleep(Duration::from_secs(2));
-
-}
-fn restart(bus: &mut I2c) { 
-    //Read Mode 1
-    let mut buf = vec![0];
-    bus.write_read(&vec![0x00], &mut buf).expect("Failed to read bytes");
-    let mode = buf.get(0).unwrap();
-    println!("Mode 1 Register (Sleeping): {:#b}", mode);
-    //If bit 7 is on
-    if buf.get(0).unwrap() & 0x40 == 0x40 {
-        //Clear Bit 4 (Turn On)
-        bus.write(&vec![0x00, mode - 0x10]).expect("Failed to read bytes");
-        //Wait fo rat least 500us, stabilize oscillator
-        thread::sleep(Duration::from_micros(750));
-        //Write a logic 1 to bit 7
-        bus.write(&vec![0x00, 0x41]);
-    }
-    bus.write_read(&vec![0x00], &mut buf);
-    println!("Mode 1 Register (Restarted): {:#b}", buf.get(0).unwrap());
-}
+}*/
