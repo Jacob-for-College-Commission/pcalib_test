@@ -10,3 +10,4 @@ edition = "2018"
 rppal = "0.11.3"
 log = "0.4.8"
 tokio = { version = "0.2", features = ["full"] }
+simple_logger = "1.6.0"

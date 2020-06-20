@@ -2,37 +2,41 @@ use rppal::i2c::{I2c};
 use pcalib_test::PCA9685;
 use tokio::time::delay_for;
 use std::time::Duration;
+extern crate simple_logger;
+extern crate log;
+use log::{debug, info};
 
 #[tokio::main]
 async fn main() {
-
+    simple_logger::init().unwrap();
+    info!("Hewwo! (づ｡◕‿‿◕｡)づ");
     let mut device = PCA9685::new(0x40, I2c::new().unwrap()).unwrap();
+
     if let Err(_e) = device.set_prescale_fr(50).await {
         panic!();
     }
 
-    if let Err(_e) = device.start().await {
-        panic!();
-    }
+    info!("Starting loop!");
 
     loop {
+        
         //Set Max
-        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x97)) {
+        if let Err(_e) = device.set_channel(0, (0, 0), (0x01, 0x97)) {
             panic!();
         }
         delay_for(Duration::from_secs(2)).await;
         //Set Mid
-        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x33)) {
+        if let Err(_e) = device.set_channel(0, (0, 0), (0x01, 0x33)) {
             panic!();
         }
         delay_for(Duration::from_secs(2)).await;
         //Set Min
-        if let Err(_e) = device.set_channel(9, (0, 0), (0x00, 0xCD)) {
+        if let Err(_e) = device.set_channel(0, (0, 0), (0x00, 0xCD)) {
             panic!();
         }
         delay_for(Duration::from_secs(2)).await;
         //Set Mid
-        if let Err(_e) = device.set_channel(9, (0, 0), (0x01, 0x33)) {
+        if let Err(_e) = device.set_channel(0, (0, 0), (0x01, 0x33)) {
             panic!();
         }
         delay_for(Duration::from_secs(2)).await;
